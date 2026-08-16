@@ -118,3 +118,16 @@ pre-computed PCA embeddings) across the six traffic classes above.
 - ITBIN-2313-0115 — Kavindu Thathsara
 - ITBIN-2313-0098 — M.A.S. Sandamali
 - ITBIN-2313-0085 — Nethmi Priyanjala
+---
+
+## Note on Submission Files & Dataset
+
+Due to the **5MB file size limit on LMS**, large binary files, dataset CSVs, and local virtual environment dependencies have been excluded from this submission ZIP package:
+
+- **`data/HTTPS-clf-dataset.csv`** (Raw Dataset - ~184 MB)
+- **`data/processed_splits.npz`** (Preprocessed NPZ Splits - ~5.4 MB)
+- **`.venv/`** (Local Python Virtual Environment)
+
+### Access Complete Dataset & Code
+The full source code, raw dataset files, preprocessed splits, and complete commit history are accessible on our official GitHub Repository:
+👉 **GitHub Repository:** [https://github.com/Ashansen-Corder/-Encrypted-Network-Traffic-Recognition-System.git](https://github.com/Ashansen-Corder/-Encrypted-Network-Traffic-Recognition-System.git)
