@@ -77,6 +77,98 @@ def train_xgboost(X_train, y_train, num_classes: int):
 
 
 def train_dnn(X_train, y_train, X_val, y_val, num_classes: int):
+    """Train and evaluate the Deep Neural Network with training safeguards."""
+    import tensorflow as tf
+
+    set_global_seed(config.RANDOM_STATE)
+    params = config.DNN_PARAMS
+
+    model = build_dnn(
+        input_dim=X_train.shape[1],
+        num_classes=num_classes,
+        params=params,
+    )
+    model.summary(print_fn=logger.info)
+
+    # Save the best-performing model based on validation loss.
+    checkpoint_path = os.path.join(
+        config.RESULTS_DIR,
+        "best_dnn.keras",
+    )
+
+    callbacks = [
+        tf.keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            patience=params["patience"],
+            restore_best_weights=True,
+        ),
+        tf.keras.callbacks.ReduceLROnPlateau(
+            monitor="val_loss",
+            factor=0.5,
+            patience=3,
+            min_lr=1e-6,
+        ),
+        tf.keras.callbacks.ModelCheckpoint(
+            filepath=checkpoint_path,
+            monitor="val_loss",
+            save_best_only=True,
+            mode="min",
+            verbose=1,
+        ),
+    ]
+
+    with timer("Deep Neural Network: training", logger):
+        history = model.fit(
+            X_train,
+            y_train,
+            validation_data=(X_val, y_val),
+            epochs=params["epochs"],
+            batch_size=params["batch_size"],
+            callbacks=callbacks,
+            verbose=2,
+        )
+
+    # Evaluate the trained DNN on the validation set.
+    val_loss, val_accuracy = model.evaluate(
+        X_val,
+        y_val,
+        verbose=0,
+    )
+
+    logger.info(
+        f"Deep Neural Network validation loss: {val_loss:.4f}"
+    )
+    logger.info(
+        f"Deep Neural Network validation accuracy: {val_accuracy:.4f}"
+    )
+
+    # Save the final trained model.
+    model.save(config.DNN_MODEL_PATH)
+    logger.info(
+        f"Saved DNN model -> {config.DNN_MODEL_PATH}"
+    )
+
+    # Save the training history for later comparison and visualization.
+    history_path = os.path.join(
+        config.RESULTS_DIR,
+        "dnn_history.json",
+    )
+
+    with open(history_path, "w") as f:
+        json.dump(
+            {
+                k: [float(v) for v in vals]
+                for k, vals in history.history.items()
+            },
+            f,
+            indent=2,
+        )
+
+    logger.info(
+        f"Saved DNN training history -> {history_path}"
+    )
+
+    return model, history
     import tensorflow as tf
 
     set_global_seed(config.RANDOM_STATE)
